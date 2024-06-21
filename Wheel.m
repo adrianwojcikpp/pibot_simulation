@@ -8,6 +8,7 @@ classdef Wheel
       Segments
       AngularPosition
       SwitchColor
+      PPP
    end
    methods
 
@@ -20,12 +21,11 @@ classdef Wheel
         obj.Radius = radius;
         obj.SwitchColor = 0;
         
-        p = obj.Radius*cos((0:(obj.NumOfSegments-1))*(2*pi/obj.NumOfSegments) + obj.AngularPosition);
+        p = 2*obj.Radius*cos([0, (2*pi/obj.NumOfSegments)*(0:(obj.NumOfSegments/2-1)) + obj.AngularPosition, pi]);
         obj.Segments = cell(obj.NumOfSegments/2,1); % only upper half is visible
-        for i = 1 : obj.NumOfSegments/2
+        for i = 1 : obj.NumOfSegments/2+1
             obj.Segments{i} = Rectangle([(p(i)+p(i+1))/2 0]+obj.Center, p(i)-p(i+1), obj.Width, obj.Colors(1+(mod(i,2) == obj.SwitchColor), :)); 
         end
-
       end
 
       function Orientation = getOrientation(obj)
@@ -34,7 +34,6 @@ classdef Wheel
 
       function obj = setAngularPostion(obj, angle)
 
-
         % Color switching - emulation of wheel rotation  
         angle = mod(angle, (2*pi/obj.NumOfSegments));
         if abs(obj.AngularPosition - angle) > (pi/obj.NumOfSegments)
@@ -42,9 +41,9 @@ classdef Wheel
         end
         obj.AngularPosition = angle;
         
-        p = obj.Radius*cos((0:(obj.NumOfSegments-1))*(2*pi/obj.NumOfSegments) + obj.AngularPosition);
+        p = 2*obj.Radius*cos([0, (2*pi/obj.NumOfSegments)*(0:(obj.NumOfSegments/2-1)) + obj.AngularPosition, pi]);
 
-        for i = 1 : obj.NumOfSegments/2
+        for i = 1 : obj.NumOfSegments/2+1
             obj.Segments{i} = obj.Segments{i}.update([(p(i)+p(i+1))/2 0]+obj.Center, p(i)-p(i+1), obj.Width, obj.Colors(1+(mod(i,2) == obj.SwitchColor), :));
         end
 
@@ -52,19 +51,19 @@ classdef Wheel
 
       function obj = moveBy(obj, dx, dy)
         obj.Center = obj.Center + [dx, dy];
-        for i = 1 : obj.NumOfSegments/2
+        for i = 1 : obj.NumOfSegments/2+1
             obj.Segments{i} = obj.Segments{i}.moveBy(dx, dy);
         end
       end
 
       function obj = rotateBy(obj, angle)
-        for i = 1 : obj.NumOfSegments/2
+        for i = 1 : obj.NumOfSegments/2+1
             obj.Segments{i} = obj.Segments{i}.rotateByOrigin(angle, [obj.Center 0]);
         end
       end
 
       function obj = rotateByOrigin(obj, angle, origin)
-        for i = 1 : obj.NumOfSegments/2
+        for i = 1 : obj.NumOfSegments/2+1
             obj.Segments{i} = obj.Segments{i}.rotateByOrigin(angle, origin);
         end
         obj.Center = (obj.Center - origin(1:2))*[cosd(angle) -sind(angle); sind(angle) cosd(angle)].' + origin(1:2);
